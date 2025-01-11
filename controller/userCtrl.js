@@ -40,6 +40,9 @@ const loginUserCtrl = asyncHandler( async(req, res) => {
 const getallUser = asyncHandler( async(req, res) => {
    try {
     const getUsers = await User.find();
+    // For specific searching, e.g. first-name
+    // const getUsers = await User.find({}, {firstname:1});
+    console.log(getUsers);
     res.json(getUsers);
    }
    catch (error) {
@@ -79,7 +82,7 @@ const deleteUser = asyncHandler( async(req, res) => {
 // Update a user
 
 const updatedUser = asyncHandler( async(req,res) => {
-    const {id} = req.params;
+    const {id} = req.user;
     try {
         const updatedUser = await User.findByIdAndUpdate(
             id, {
