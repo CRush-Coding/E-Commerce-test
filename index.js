@@ -6,11 +6,13 @@ const dotenv = require('dotenv').config()
 const PORT = process.env.PORT || 4000;
 const authRouter = require('./routes/authRoutes');
 const { notFound, errorHandler } = require('./middlewares/errorHandler');
+const cookieParser = require('cookie-parser');
 
 dbConnect();
 
 app.use(bodyPaser.json());
 app.use(bodyPaser.urlencoded({ extended: false }));
+app.use(cookieParser());
 
 
 
