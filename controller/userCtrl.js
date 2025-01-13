@@ -25,6 +25,8 @@ const loginUserCtrl = asyncHandler( async(req, res) => {
     const {email, password} = req.body;
     // Check if user exists or not
     const findUser = await User.findOne({email});
+    console.log(findUser?.id);
+    console.log(findUser?._id);
     if (findUser && await findUser.isPasswordMatched(password)) {
         const refreshToken = await generateRefreshToken(findUser?._id);
 
@@ -47,7 +49,7 @@ const loginUserCtrl = asyncHandler( async(req, res) => {
             email: findUser?.email,
             mobile: findUser?.mobile,
             token: generateToken(findUser?.id),
-        })
+        });
     } else {
         throw new Error("Invalid Credentials");
     }
@@ -78,7 +80,7 @@ const handleRefreshToken = asyncHandler( async(req, res) => {
         }
         else {
             // Generate new acc-token
-            const accessToken = generateRefreshToken(user?._id);
+            const accessToken = generateToken(user?._id);
             res.json({accessToken});
         }
     });
