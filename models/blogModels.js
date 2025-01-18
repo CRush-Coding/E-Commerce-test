@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 
 // Declare the Schema of the Mongo model
-var userSchema = new mongoose.Schema({
+var blogSchema = new mongoose.Schema({
     title:{
         type:String,
         required:true,

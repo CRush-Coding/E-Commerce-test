@@ -5,21 +5,27 @@ const asyncHandler = require("express-async-handler");
 
 const authMiddleware = asyncHandler( async(req, res, next) => {
     let token;
-    if (req.headers.authorization.startsWith("Bearer")) {
-        console.log("yipeeee");
-        token = req.headers.authorization.split(" ")[1];
-        try {
-            if (token) {
-                console.log("HOORAYYYYY");
-                const decoded = jwt.verify(token, process.env.JWT_SECRET);
-                const user = await User.findById(decoded?.id);
-                console.log(user);
-                req.user = user;
-                next();
+    const authorization = await req.headers.authorization;
+    console.log(authorization);
+    if (authorization){
+        if (req.headers.authorization.startsWith("Bearer")) {
+            console.log("yipeeee");
+            token = req.headers.authorization.split(" ")[1];
+            try {
+                if (token) {
+                    console.log("HOORAYYYYY");
+                    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+                    const user = await User.findById(decoded?.id);
+                    // console.log(user);
+                    req.user = user;
+                    next();
+                }
             }
-        }
-        catch (error) {
-            throw new Error('Not Authorized token expired, please login again');
+            catch (error) {
+                throw new Error('Not Authorized token expired, please login again');
+            };
+        } else {
+            throw new Error("There is no token attached to header");
         }
     } else {
         throw new Error("There is no token attached to header");
