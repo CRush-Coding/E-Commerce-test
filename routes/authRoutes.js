@@ -16,6 +16,9 @@ const { createUser, loginUserCtrl,
     getUserCart,
     emptyCart,
     applyCoupon,
+    createOrder,
+    getOrders,
+    updateOrderStatus,
 } = require("../controller/userCtrl");
 const {authMiddleware, isAdmin} = require('../middlewares/authMiddleware');
 
@@ -27,6 +30,8 @@ router.post("/login", loginUserCtrl);
 router.post("/admin-login", loginAdmin);
 router.post("/cart", authMiddleware, userCart);
 router.post("/cart/apply-coupon", authMiddleware, applyCoupon);
+router.post("/cart/create-order", authMiddleware, createOrder);
+router.get("/get-orders", authMiddleware, getOrders);
 router.get("/all-users", getallUser);
 router.get("/refresh", handleRefreshToken);
 router.get("/logout", logout);
@@ -39,6 +44,7 @@ router.get("/:id", authMiddleware, isAdmin, getsingleUser);
 router.delete("/:id", deleteUser);
 router.put("/block-user/:id", authMiddleware, isAdmin, blockUser);
 router.put("/unblock-user/:id", authMiddleware, isAdmin, unblockUser);
+router.put("/update-order/:id", authMiddleware, isAdmin, updateOrderStatus);
 
 
 
