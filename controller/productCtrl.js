@@ -214,12 +214,20 @@ const uploadImages = asyncHandler(async(req, res) => {
         const uploader = (path) => cloudinaryUploadImg(path, "images");
         const urls = [];
         const files = req.files;
+
+        // console.log('---------------');
+        // console.log(files);
+
         for (const file of files) {
             const {path} = file;
+            console.log(path);
             const newpath = await uploader(path);
             urls.push(newpath);
+            // console.log(path);
             fs.unlinkSync(path);
         }
+        // console.log(urls.map((file) => {return file}));
+
         const findProduct = await Product.findByIdAndUpdate(id, {
             images:urls.map((file) => {return file})
         }, {new: true,}

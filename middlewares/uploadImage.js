@@ -40,13 +40,14 @@ const productImgResize = async (req, res, next) => {
     // console.log('-----------------');
     // console.log(req.files);
     // console.log('-----------------');
+    // console.log(req.files);
     if(!req.files) {
         console.log('no image');
         return next()
     };
     await Promise.all(
         req.files.map( async (file) => {
-            console.log('entered promise');
+            // console.log('entered promise');
             await sharp(file.path)
             .resize(300,300)
             .toFormat('jpeg')

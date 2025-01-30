@@ -1,11 +1,16 @@
 const { generateToken } = require('../config/jwToken');
 const User = require('../models/userModel');
+const Product = require('../models/productModel');
+const Cart = require('../models/cartModel');
+const Coupon = require('../models/couponModel');
+
 const asyncHandler = require('express-async-handler');
 const validateMongoDbId = require('../utils/validateMongodbd');
 const { generateRefreshToken } = require('../config/refreshtoken');
 const jwt = require("jsonwebtoken");
 const sendEmail = require('./emailCtrl');
 const crypto = require('crypto');
+const { log } = require('console');
 
 
 
@@ -322,7 +327,115 @@ const resetPassword = asyncHandler(async(req,res) => {
     user.passwordResetExpires = undefined;
     await user.save();
     res.json(user);
+});
+
+const saveAddress = asyncHandler(async(req,res) => {
+    const { id } = req.user;
+    validateMongoDbId(id);
+    try {
+        const updatedUser = await User.findByIdAndUpdate(
+            id, {
+            address:req?.body.address,
+        },
+        {
+            new: true,
+        }
+        );
+        res.json(updatedUser);
+    }
+    catch(error) {
+        throw new Error(error);
+    }
 })
+
+
+const getWishlist = asyncHandler(async(req,res) => {
+    const { _id } = req.user;
+    try {
+        const findUser = await User.findById(_id).populate("wishlist");
+        res.json(findUser);
+
+    } catch(error) {
+        throw new Error(error);
+    }
+});
+
+const userCart = asyncHandler(async(req, res) => {
+    const {cart} = req.body;
+    const {_id} = req.user;
+    validateMongoDbId(_id);
+    try {
+        let products = [];
+        const user = await User.findById(_id);
+        // Check if user already has products in cart
+        const alreadyExistCart = await Cart.findOne({ orderby:user._id });
+
+        if(alreadyExistCart) {
+            console.log(alreadyExistCart);
+            Cart.deleteOne({ orderby:user._id });
+        }
+        for (let i = 0; i < cart.length; i++) {
+            let object = {};
+            object.product = cart[i]._id;
+            object.count = cart[i].count;
+            object.color = cart[i].color;
+            let getPrice = await Product.findById(cart[i]._id).select('price').exec();
+            object.price = getPrice.price;
+            products.push(object);
+        }
+        let cartTotal = 0;
+        for (let i = 0; i < products.length; i++) {
+            cartTotal = cartTotal + products[i].price * products[i].count;
+        };
+        let newCart = await new Cart({
+            products,
+            cartTotal,
+            orderby: user?._id,
+        }).save();
+        res.json(newCart);
+    } catch (error) {
+        throw new Error(error);
+    }
+});
+
+const getUserCart = asyncHandler(async(req,res) => {
+    const {_id} = req.user;
+    validateMongoDbId(_id);
+    try {
+        const cart = await Cart.findOne({orderby:_id}).populate(
+            'products.product');
+        res.json(cart);
+    } catch (error) {
+        throw new Error(error);
+    }
+});
+
+const emptyCart = asyncHandler(async(req, res) => {
+    const {_id} = req.user;
+    validateMongoDbId(_id);
+    try {
+        const user = await User.findById(_id);
+        const cart = await Cart.findOneAndDelete({orderby: user._id});
+        res.json(cart);
+    } catch (error) {
+        throw new Error(error);
+    }
+});
+
+const applyCoupon = asyncHandler(async(req,res) => {
+    const {_id} = req.user;
+    validateMongoDbId(_id);
+    const {coupon} = req.body;
+    const validCoupon = await Coupon.findOne({name:coupon});
+    if(validCoupon == null) {
+        throw new Error("Invalid Coupon");
+    }
+    const user = await User.findById(_id);
+    let {products, cartTotal} = await Cart.findOne({orderby:user._id}).populate("products.product");
+    let totalAfterDiscout = (cartTotal - (cartTotal * validCoupon.discount/100)).toFixed(2);
+    await Cart.findOneAndUpdate({orderby:user._id}, {totalAfterDiscout}, {new:true});
+    res.json(totalAfterDiscout);
+});
 
 module.exports = {createUser, 
     loginUserCtrl, 
@@ -337,5 +450,11 @@ module.exports = {createUser,
     updatePassword,
     forgotPasswordToken,
     resetPassword,
-    loginAdmin
+    loginAdmin,
+    getWishlist,
+    saveAddress,
+    userCart,
+    getUserCart,
+    emptyCart,
+    applyCoupon
 };
