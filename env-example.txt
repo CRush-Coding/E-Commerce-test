@@ -1,0 +1,8 @@
+PORT=5000
+MONGODB_URL = 'Link to mongodb database'
+JWT_SECRET = 'some type of secret'
+MP = 'mp-password'
+MAIL_ID = 'youremail@email.com'
+CLOUD_KEY = 'Cloudinary-key'
+API_KEY = 'cloudinary-api-key'
+SECRET_KEY = 'cloudinary-secret-key'

@@ -7,8 +7,8 @@ const sendEmail = asyncHandler(async(data,req,res) => {
         port: 587,
         secure: false, // true for port 465, false for other ports
         auth: {
-          user: "blazeboy2213@gmail.com",
-          pass: "qsvf oqos fooq lytg",
+          user: process.env.MP_EMAIL,
+          pass: process.env.MP,
         },
       });
       console.log("Reached Here!");
